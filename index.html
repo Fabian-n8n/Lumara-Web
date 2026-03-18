@@ -186,20 +186,60 @@
 
     /* ─── Hero ─── */
     .hero {
-      min-height: 100dvh;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      height: 300vh;
       position: relative;
+    }
+
+    .hero-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
     }
 
+    .hero-video-wrapper {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .hero-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-video-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 10, 15, 0.72);
+      pointer-events: none;
+      z-index: 1;
+      will-change: opacity;
+    }
+
+    .hero-video-tint {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, rgba(175, 117, 233, 0.08), transparent 70%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
     .hero-content {
+      position: relative;
+      z-index: 3;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 8rem 5rem 5rem 5rem;
-      position: relative;
-      z-index: 2;
+      align-items: center;
+      text-align: center;
+      padding: 0 2rem;
+      will-change: transform, opacity;
     }
 
     .hero-badge {
@@ -207,14 +247,15 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1.25rem;
-      background: var(--accent-glow);
-      border: 1px solid var(--border-accent);
+      background: rgba(175, 117, 233, 0.1);
+      border: 1px solid rgba(175, 117, 233, 0.2);
+      backdrop-filter: blur(10px);
       border-radius: 100px;
       font-size: 0.75rem;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--accent-light);
       width: fit-content;
       margin-bottom: 2.5rem;
     }
@@ -249,8 +290,8 @@
 
     .hero-description {
       font-size: 1.1rem;
-      color: var(--text-secondary);
-      max-width: 460px;
+      color: rgba(255, 255, 255, 0.7);
+      max-width: 520px;
       line-height: 1.7;
       margin-bottom: 3rem;
     }
@@ -303,7 +344,7 @@
       padding: 1rem 1.75rem;
       background: transparent;
       color: var(--text-primary);
-      border: 1.5px solid var(--border);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
       border-radius: 100px;
       font-family: 'Outfit', sans-serif;
       font-size: 0.88rem;
@@ -319,42 +360,11 @@
       color: var(--accent);
     }
 
-    .hero-visual {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-visual-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .hero-visual::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, var(--bg) 0%, transparent 30%),
-                  linear-gradient(0deg, var(--bg) 0%, transparent 20%),
-                  linear-gradient(180deg, var(--bg) 0%, transparent 15%);
-      pointer-events: none;
-    }
-
-    .hero-visual::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(175, 117, 233, 0.05);
-      mix-blend-mode: screen;
-      pointer-events: none;
-      z-index: 1;
-    }
-
     .hero-scroll-indicator {
       position: absolute;
       bottom: 3rem;
-      left: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       align-items: center;
       gap: 1rem;
@@ -362,14 +372,15 @@
       font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--text-muted);
-      z-index: 2;
+      color: rgba(255, 255, 255, 0.35);
+      z-index: 4;
+      will-change: opacity;
     }
 
     .scroll-line {
       width: 48px;
       height: 1.5px;
-      background: var(--text-muted);
+      background: rgba(255, 255, 255, 0.2);
       position: relative;
       overflow: hidden;
     }
@@ -389,6 +400,17 @@
       0% { left: -100%; }
       50% { left: 0; }
       100% { left: 100%; }
+    }
+
+    .hero-bottom-fade {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 120px;
+      background: linear-gradient(to top, var(--bg), transparent);
+      z-index: 5;
+      pointer-events: none;
     }
 
     /* ─── Section Commons ─── */
@@ -1147,7 +1169,7 @@
     /* ─── Responsive ─── */
     @media (max-width: 1024px) {
       .section { padding: 5rem 3rem; }
-      .hero-content { padding: 7rem 3rem 3rem; }
+      .hero { height: 250vh; }
       .philosophy { grid-template-columns: 1fr; gap: 3rem; }
       .innovation { grid-template-columns: 1fr; }
       .innovation-visual { min-height: 40vh; }
@@ -1169,10 +1191,8 @@
       .nav-links { display: none; }
       .nav-right { display: none; }
       .nav-menu-btn { display: block; }
-      .hero { grid-template-columns: 1fr; }
-      .hero-content { padding: 7rem 1.5rem 3rem; }
-      .hero-visual { min-height: 45vh; }
-      .hero-scroll-indicator { left: 1.5rem; bottom: 1.5rem; }
+      .hero { height: 200vh; }
+      .hero-title { font-size: clamp(2.5rem, 8vw, 3.5rem); }
       .section { padding: 4rem 1.5rem; }
       .philosophy-stats { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
       .features-section { margin: 0 0.75rem; padding: 3rem 1.5rem; border-radius: 2rem; }
@@ -1189,7 +1209,6 @@
       .footer { padding: 2rem 1.5rem; }
       .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
       .footer-bottom { flex-direction: column; gap: 1rem; }
-      .hero-title { font-size: clamp(2.5rem, 8vw, 3.5rem); }
       .section-title { font-size: clamp(1.75rem, 6vw, 2.5rem); }
     }
   </style>
@@ -1217,32 +1236,39 @@
   </nav>
 
   <!-- ─── Hero ─── -->
-  <section class="hero">
-    <div class="hero-content">
-      <div class="hero-badge reveal">
-        <span class="dot"></span>
-        Redefining Private Wellness
+  <section class="hero" id="hero">
+    <div class="hero-sticky">
+      <div class="hero-video-wrapper" id="heroVideoWrapper">
+        <video class="hero-video" autoplay muted loop playsinline>
+          <source src="kling-toilet.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-video-overlay"></div>
+        <div class="hero-video-tint"></div>
       </div>
-      <h1 class="hero-title reveal reveal-delay-1">
-        The Art of<br /><em>Intelligent</em><br />Comfort
-      </h1>
-      <p class="hero-description reveal reveal-delay-2">
-        Where precision engineering meets human intuition. Lumara intelligent toilets anticipate your needs through adaptive technology, elevating everyday rituals into moments of refined well-being.
-      </p>
-      <div class="hero-cta-group reveal reveal-delay-3">
-        <a href="#collection" class="btn-primary">
-          Explore Collection
-          <span class="arrow">&rarr;</span>
-        </a>
-        <a href="#philosophy" class="btn-secondary">Our Philosophy</a>
+      <div class="hero-content" id="heroContent">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Redefining Private Wellness
+        </div>
+        <h1 class="hero-title">
+          The Art of<br /><em>Intelligent</em><br />Comfort
+        </h1>
+        <p class="hero-description">
+          Where precision engineering meets human intuition. Lumara intelligent toilets anticipate your needs through adaptive technology, elevating everyday rituals into moments of refined well-being.
+        </p>
+        <div class="hero-cta-group">
+          <a href="#collection" class="btn-primary">
+            Explore Collection
+            <span class="arrow">&rarr;</span>
+          </a>
+          <a href="#philosophy" class="btn-secondary">Our Philosophy</a>
+        </div>
       </div>
-      <div class="hero-scroll-indicator reveal reveal-delay-4">
+      <div class="hero-scroll-indicator" id="heroScrollIndicator">
         <div class="scroll-line"></div>
         Scroll to Discover
       </div>
-    </div>
-    <div class="hero-visual">
-      <img class="hero-visual-img" src="https://images.pexels.com/photos/6032235/pexels-photo-6032235.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Modern luxury bathroom interior" loading="eager" />
+      <div class="hero-bottom-fade"></div>
     </div>
   </section>
 
@@ -1713,16 +1739,55 @@
       }
     });
 
-    // ─── Parallax subtle effect on hero visual ───
-    const heroVisual = document.querySelector('.hero-visual-img');
-    if (heroVisual) {
-      window.addEventListener('scroll', () => {
-        const scrollY = window.scrollY;
-        if (scrollY < window.innerHeight) {
-          heroVisual.style.transform = `translateY(${scrollY * 0.12}px) scale(1.05)`;
-        }
-      }, { passive: true });
+    // ─── Hero scroll-reveal video animation ───
+    const heroSection = document.getElementById('hero');
+    const heroVideoWrapper = document.getElementById('heroVideoWrapper');
+    const heroOverlay = heroVideoWrapper.querySelector('.hero-video-overlay');
+    const heroContent = document.getElementById('heroContent');
+    const heroScrollIndicator = document.getElementById('heroScrollIndicator');
+
+    let ticking = false;
+
+    function updateHeroScroll() {
+      const scrollY = window.scrollY;
+      const heroHeight = heroSection.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const scrollRange = heroHeight - viewportHeight;
+
+      if (scrollRange <= 0) return;
+
+      const progress = Math.min(Math.max(scrollY / scrollRange, 0), 1);
+
+      // Phase 1 (0–0.35): Text fades out, shifts up
+      const textProgress = Math.min(progress / 0.35, 1);
+      const contentFade = 1 - textProgress;
+      const contentY = -60 * textProgress;
+      heroContent.style.opacity = contentFade;
+      heroContent.style.transform = `translateY(${contentY}px)`;
+
+      // Scroll indicator fades out first
+      heroScrollIndicator.style.opacity = Math.max(1 - progress * 6, 0);
+
+      // Phase 2 (0.1–0.8): Overlay lifts, revealing video
+      const overlayStart = 0.1;
+      const overlayEnd = 0.8;
+      const overlayProgress = Math.min(Math.max((progress - overlayStart) / (overlayEnd - overlayStart), 0), 1);
+      // Ease out cubic for smooth reveal
+      const easedOverlay = 1 - Math.pow(1 - overlayProgress, 3);
+      const overlayOpacity = 0.72 * (1 - easedOverlay);
+      heroOverlay.style.opacity = overlayOpacity / 0.72;
+
+      ticking = false;
     }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateHeroScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    updateHeroScroll();
   </script>
 </body>
 </html>
