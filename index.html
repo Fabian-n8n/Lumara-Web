@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUMARA — Intelligent Toilets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg-elevated: #111118;
+      --bg-card: #16161e;
+      --bg-card-hover: #1c1c26;
+      --text-primary: #f0eef5;
+      --text-secondary: #8a8694;
+      --text-muted: #55515f;
+      --accent: #AF75E9;
+      --accent-light: #c9a0f0;
+      --accent-dim: rgba(175, 117, 233, 0.15);
+      --accent-glow: rgba(175, 117, 233, 0.08);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(175, 117, 233, 0.12);
+      --shadow-soft: 0 20px 60px -15px rgba(0, 0, 0, 0.5);
+      --shadow-hover: 0 30px 80px -20px rgba(175, 117, 233, 0.15);
+      --shadow-glow: 0 0 80px rgba(175, 117, 233, 0.06);
+      --radius: 2rem;
+      --radius-sm: 1.25rem;
+      --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: white;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* ─── Grain Overlay ─── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* ─── Navigation ─── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.25rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .nav.scrolled {
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px) saturate(1.8);
+      -webkit-backdrop-filter: blur(20px) saturate(1.8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+      justify-self: center;
+    }
+
+    .nav-links a {
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      text-decoration: none;
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1.5px;
+      background: var(--accent);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-right {
+      justify-self: end;
+    }
+
+    .nav-cta {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border-accent);
+      border-radius: 100px;
+      transition: var(--transition);
+    }
+
+    .nav-cta:hover {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+    }
+
+    .nav-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+      justify-self: end;
+    }
+
+    .nav-menu-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--text-primary);
+      position: absolute;
+      left: 0;
+      transition: var(--transition);
+    }
+
+    .nav-menu-btn span:first-child { top: 0; }
+    .nav-menu-btn span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+    .nav-menu-btn span:last-child { bottom: 0; }
+
+    /* ─── Hero ─── */
+    .hero {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 5rem 5rem 5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      background: var(--accent-glow);
+      border: 1px solid var(--border-accent);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      width: fit-content;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 5.5vw, 5.5rem);
+      font-weight: 300;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      margin-bottom: 2rem;
+    }
+
+    .hero-title em {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 460px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 2.25rem;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 100px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(175, 117, 233, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .btn-primary .arrow {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-primary:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 1.75rem;
+      background: transparent;
+      color: var(--text-primary);
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .hero-visual {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-visual-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, var(--bg) 0%, transparent 30%),
+                  linear-gradient(0deg, var(--bg) 0%, transparent 20%),
+                  linear-gradient(180deg, var(--bg) 0%, transparent 15%);
+      pointer-events: none;
+    }
+
+    .hero-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(175, 117, 233, 0.05);
+      mix-blend-mode: screen;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      z-index: 2;
+    }
+
+    .scroll-line {
+      width: 48px;
+      height: 1.5px;
+      background: var(--text-muted);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      animation: scroll-hint 2s ease-in-out infinite;
+    }
+
+    @keyframes scroll-hint {
+      0% { left: -100%; }
+      50% { left: 0; }
+      100% { left: 100%; }
+    }
+
+    /* ─── Section Commons ─── */
+    .section {
+      padding: 8rem 5rem;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 32px;
+      height: 1.5px;
+      background: var(--accent);
+    }
+
+    .section-title {
+      font-size: clamp(2.25rem, 4vw, 3.75rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      max-width: 700px;
+    }
+
+    .section-title em {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .section-description {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 540px;
+      line-height: 1.75;
+      margin-top: 1.5rem;
+    }
+
+    /* ─── Philosophy Section ─── */
+    .philosophy {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .philosophy-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .stat-item {
+      padding-top: 1.5rem;
+      border-top: 1.5px solid var(--border);
+    }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .philosophy-visual {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+
+    .philosophy-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .philosophy-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(175, 117, 233, 0.1), transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ─── Features Bento ─── */
+    .features-section {
+      background: var(--bg-elevated);
+      border-radius: 3rem;
+      margin: 0 2rem;
+      padding: 6rem 5rem;
+      border: 1px solid var(--border);
+    }
+
+    .features-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      margin-bottom: 5rem;
+      align-items: end;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      padding: 2.75rem 2.25rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--accent-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.75rem;
+      color: var(--accent);
+    }
+
+    .feature-card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ─── Innovation Split ─── */
+    .innovation {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 0;
+      min-height: 85vh;
+    }
+
+    .innovation-visual {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .innovation-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .innovation-visual::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(270deg, var(--bg) 0%, transparent 40%),
+                  linear-gradient(0deg, rgba(10, 10, 15, 0.3), rgba(10, 10, 15, 0.3));
+      pointer-events: none;
+    }
+
+    .innovation-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(175, 117, 233, 0.1), transparent 70%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .innovation-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6rem 5rem;
+    }
+
+    .innovation-features {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .innovation-feature {
+      display: grid;
+      grid-template-columns: 3rem 1fr;
+      gap: 1.25rem;
+      align-items: start;
+      padding: 1.75rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .innovation-feature:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .innovation-feature:hover {
+      padding-left: 0.5rem;
+    }
+
+    .innovation-feature-num {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      padding-top: 0.15rem;
+      letter-spacing: 0.05em;
+    }
+
+    .innovation-feature h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .innovation-feature p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ─── Product Collection ─── */
+    .collection {
+      padding: 8rem 5rem;
+    }
+
+    .collection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      margin-bottom: 4rem;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .product-card {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--border-accent);
+    }
+
+    .product-card:first-child {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .product-image {
+      width: 100%;
+      aspect-ratio: 4/3;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .product-card:hover .product-image img {
+      transform: scale(1.05);
+    }
+
+    .product-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, var(--bg-card) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    .product-card:first-child .product-image {
+      aspect-ratio: 16/10;
+    }
+
+    .product-image-label {
+      position: absolute;
+      top: 1.25rem;
+      left: 1.25rem;
+      padding: 0.4rem 1rem;
+      background: rgba(175, 117, 233, 0.15);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(175, 117, 233, 0.2);
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      z-index: 2;
+    }
+
+    .product-info {
+      padding: 1.75rem 2rem;
+    }
+
+    .product-card:first-child .product-info {
+      padding: 2.25rem 2.75rem;
+    }
+
+    .product-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.35rem;
+      color: var(--text-primary);
+    }
+
+    .product-card:first-child .product-name {
+      font-size: 1.6rem;
+    }
+
+    .product-tagline {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .product-card:first-child .product-tagline {
+      font-size: 0.95rem;
+      max-width: 380px;
+    }
+
+    .product-price {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+    }
+
+    /* ─── Experience Section ─── */
+    .experience {
+      margin: 0 2rem;
+      border-radius: 3rem;
+      background: linear-gradient(165deg, #1a1528, #0f0a18);
+      color: white;
+      padding: 8rem 5rem;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(175, 117, 233, 0.08);
+    }
+
+    .experience::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(175, 117, 233, 0.08), transparent 70%);
+      pointer-events: none;
+    }
+
+    .experience::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(175, 117, 233, 0.05), transparent 70%);
+      pointer-events: none;
+    }
+
+    .experience-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .experience .section-label {
+      color: var(--accent-light);
+    }
+
+    .experience .section-label::before {
+      background: var(--accent-light);
+    }
+
+    .experience .section-description {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .experience-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .exp-feature {
+      padding: 2rem;
+      border-radius: var(--radius-sm);
+      background: rgba(175, 117, 233, 0.04);
+      border: 1px solid rgba(175, 117, 233, 0.08);
+      transition: var(--transition);
+    }
+
+    .exp-feature:hover {
+      background: rgba(175, 117, 233, 0.08);
+      border-color: rgba(175, 117, 233, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .exp-feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(175, 117, 233, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      color: var(--accent-light);
+    }
+
+    .exp-feature h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.01em;
+    }
+
+    .exp-feature p {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.4);
+      line-height: 1.6;
+    }
+
+    /* ─── Testimonial ─── */
+    .testimonial-section {
+      padding: 8rem 5rem;
+      text-align: center;
+    }
+
+    .testimonial-quote {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.75rem, 3vw, 2.75rem);
+      font-weight: 400;
+      font-style: italic;
+      line-height: 1.35;
+      max-width: 780px;
+      margin: 0 auto 2.5rem;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .testimonial-author {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .testimonial-author strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ─── CTA Banner ─── */
+    .cta-banner {
+      margin: 0 5rem 5rem;
+      padding: 5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-glow);
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(175, 117, 233, 0.06), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .cta-title em {
+      font-family: 'DM Serif Display', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .cta-right {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .cta-right p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ─── Footer ─── */
+    .footer {
+      padding: 4rem 5rem 3rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr repeat(3, 1fr);
+      gap: 4rem;
+      margin-bottom: 4rem;
+    }
+
+    .footer-brand p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-top: 1rem;
+      max-width: 300px;
+    }
+
+    .footer-col h4 {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .footer-col a {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-col a:hover {
+      color: var(--accent-light);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-bottom p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 1.25rem;
+    }
+
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer-social a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(175, 117, 233, 0.15);
+    }
+
+    /* ─── Reveal Animations ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* Staggered children */
+    .stagger-children > * {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stagger-children.visible > *:nth-child(1) { transition-delay: 0.05s; }
+    .stagger-children.visible > *:nth-child(2) { transition-delay: 0.12s; }
+    .stagger-children.visible > *:nth-child(3) { transition-delay: 0.19s; }
+    .stagger-children.visible > *:nth-child(4) { transition-delay: 0.26s; }
+    .stagger-children.visible > *:nth-child(5) { transition-delay: 0.33s; }
+    .stagger-children.visible > *:nth-child(6) { transition-delay: 0.40s; }
+
+    .stagger-children.visible > * {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── Marquee ─── */
+    .marquee-section {
+      padding: 3rem 0;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .marquee-track {
+      display: flex;
+      animation: marquee 30s linear infinite;
+      width: max-content;
+    }
+
+    .marquee-item {
+      flex-shrink: 0;
+      padding: 0 3rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .marquee-item .sep {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1024px) {
+      .section { padding: 5rem 3rem; }
+      .hero-content { padding: 7rem 3rem 3rem; }
+      .philosophy { grid-template-columns: 1fr; gap: 3rem; }
+      .innovation { grid-template-columns: 1fr; }
+      .innovation-visual { min-height: 40vh; }
+      .features-section { padding: 4rem 3rem; margin: 0 1rem; }
+      .features-header { grid-template-columns: 1fr; gap: 1.5rem; }
+      .features-grid { grid-template-columns: 1fr 1fr; }
+      .collection { padding: 5rem 3rem; }
+      .collection-grid { grid-template-columns: 1fr 1fr; }
+      .product-card:first-child { grid-column: span 2; grid-row: span 1; }
+      .experience { margin: 0 1rem; padding: 5rem 3rem; }
+      .experience-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .cta-banner { margin: 0 3rem 3rem; padding: 3rem; grid-template-columns: 1fr; gap: 2rem; }
+      .footer { padding: 3rem; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+
+    @media (max-width: 768px) {
+      .nav { padding: 1rem 1.5rem; grid-template-columns: 1fr auto; }
+      .nav-links { display: none; }
+      .nav-right { display: none; }
+      .nav-menu-btn { display: block; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-content { padding: 7rem 1.5rem 3rem; }
+      .hero-visual { min-height: 45vh; }
+      .hero-scroll-indicator { left: 1.5rem; bottom: 1.5rem; }
+      .section { padding: 4rem 1.5rem; }
+      .philosophy-stats { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      .features-section { margin: 0 0.75rem; padding: 3rem 1.5rem; border-radius: 2rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .innovation-content { padding: 3rem 1.5rem; }
+      .collection { padding: 4rem 1.5rem; }
+      .collection-header { flex-direction: column; align-items: start; gap: 1rem; }
+      .collection-grid { grid-template-columns: 1fr; }
+      .product-card:first-child { grid-column: span 1; }
+      .experience { margin: 0 0.75rem; padding: 3rem 1.5rem; border-radius: 2rem; }
+      .experience-features { grid-template-columns: 1fr; }
+      .testimonial-section { padding: 4rem 1.5rem; }
+      .cta-banner { margin: 0 1.5rem 2rem; padding: 2.5rem 1.5rem; }
+      .footer { padding: 2rem 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; gap: 1rem; }
+      .hero-title { font-size: clamp(2.5rem, 8vw, 3.5rem); }
+      .section-title { font-size: clamp(1.75rem, 6vw, 2.5rem); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Navigation ─── -->
+  <nav class="nav" id="nav">
+    <a href="#" class="nav-logo">Lumara</a>
+    <ul class="nav-links">
+      <li><a href="#philosophy">Philosophy</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#innovation">Innovation</a></li>
+      <li><a href="#collection">Collection</a></li>
+      <li><a href="#experience">Experience</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="#collection" class="nav-cta">Shop Now</a>
+    </div>
+    <button class="nav-menu-btn" id="menuBtn" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- ─── Hero ─── -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge reveal">
+        <span class="dot"></span>
+        Redefining Private Wellness
+      </div>
+      <h1 class="hero-title reveal reveal-delay-1">
+        The Art of<br /><em>Intelligent</em><br />Comfort
+      </h1>
+      <p class="hero-description reveal reveal-delay-2">
+        Where precision engineering meets human intuition. Lumara intelligent toilets anticipate your needs through adaptive technology, elevating everyday rituals into moments of refined well-being.
+      </p>
+      <div class="hero-cta-group reveal reveal-delay-3">
+        <a href="#collection" class="btn-primary">
+          Explore Collection
+          <span class="arrow">&rarr;</span>
+        </a>
+        <a href="#philosophy" class="btn-secondary">Our Philosophy</a>
+      </div>
+      <div class="hero-scroll-indicator reveal reveal-delay-4">
+        <div class="scroll-line"></div>
+        Scroll to Discover
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img class="hero-visual-img" src="https://images.pexels.com/photos/6032235/pexels-photo-6032235.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Modern luxury bathroom interior" loading="eager" />
+    </div>
+  </section>
+
+  <!-- ─── Marquee ─── -->
+  <div class="marquee-section">
+    <div class="marquee-track">
+      <div class="marquee-item">UV Sterilization <span class="sep"></span></div>
+      <div class="marquee-item">Heated Seating <span class="sep"></span></div>
+      <div class="marquee-item">Hands-Free Operation <span class="sep"></span></div>
+      <div class="marquee-item">Personalized Wash <span class="sep"></span></div>
+      <div class="marquee-item">Auto Deodorizer <span class="sep"></span></div>
+      <div class="marquee-item">Night Light <span class="sep"></span></div>
+      <div class="marquee-item">Soft-Close Lid <span class="sep"></span></div>
+      <div class="marquee-item">Self-Cleaning Nozzle <span class="sep"></span></div>
+      <div class="marquee-item">UV Sterilization <span class="sep"></span></div>
+      <div class="marquee-item">Heated Seating <span class="sep"></span></div>
+      <div class="marquee-item">Hands-Free Operation <span class="sep"></span></div>
+      <div class="marquee-item">Personalized Wash <span class="sep"></span></div>
+      <div class="marquee-item">Auto Deodorizer <span class="sep"></span></div>
+      <div class="marquee-item">Night Light <span class="sep"></span></div>
+      <div class="marquee-item">Soft-Close Lid <span class="sep"></span></div>
+      <div class="marquee-item">Self-Cleaning Nozzle <span class="sep"></span></div>
+    </div>
+  </div>
+
+  <!-- ─── Philosophy ─── -->
+  <section class="section" id="philosophy">
+    <div class="philosophy">
+      <div>
+        <div class="section-label reveal">Our Philosophy</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          Meaningful <em>Innovation</em><br />Begins with Intuition
+        </h2>
+        <p class="section-description reveal reveal-delay-2">
+          Every Lumara product is born from a singular conviction: the details that matter most are the ones you never have to think about. Our engineers collaborate across human factors, industrial design, and biomechanics to create experiences that feel inevitable.
+        </p>
+        <div class="philosophy-stats stagger-children">
+          <div class="stat-item">
+            <div class="stat-number">12+</div>
+            <div class="stat-label">Years of research & development</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">4.7M</div>
+            <div class="stat-label">Homes worldwide trust Lumara</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Customer satisfaction rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">36</div>
+            <div class="stat-label">International design patents</div>
+          </div>
+        </div>
+      </div>
+      <div class="philosophy-visual reveal reveal-delay-2">
+        <img src="https://images.pexels.com/photos/7045358/pexels-photo-7045358.jpeg?auto=compress&cs=tinysrgb&w=1000" alt="Modern bathroom interior design" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Features ─── -->
+  <section class="features-section" id="features">
+    <div class="features-header">
+      <div>
+        <div class="section-label reveal">Core Pillars</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          Engineered for<br /><em>Well-Being</em>
+        </h2>
+      </div>
+      <p class="section-description reveal reveal-delay-2">
+        Four foundational pillars guide every design decision, ensuring that each Lumara intelligent toilet delivers on the promise of thoughtful, human-centered innovation.
+      </p>
+    </div>
+
+    <div class="features-grid stagger-children">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3>Human-Centered Design</h3>
+        <p>Inspired by organic forms found in nature, each silhouette balances sculptural beauty with ergonomic precision. Every curve serves a purpose.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h3>Advanced Cleanliness</h3>
+        <p>Proprietary UV-light sterilization technology paired with stainless steel nozzles ensures hospital-grade hygiene with every use cycle.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <h3>Touch-Free Hygiene</h3>
+        <p>Automatic lid operation, sensor-activated flushing, and proximity-based controls eliminate the need for physical contact entirely.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <h3>Deep Personalization</h3>
+        <p>Individual user profiles store preferred water temperature, pressure, seat warmth, and ambient lighting. Your comfort, memorized.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </div>
+        <h3>Ambient Intelligence</h3>
+        <p>Integrated night lighting, automatic deodorization, and whisper-quiet operation adapt seamlessly to any time of day.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3>Lasting Durability</h3>
+        <p>Premium ceramic bodies with antimicrobial glazing resist stains and bacteria, maintaining their pristine finish for decades of use.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Innovation ─── -->
+  <section class="innovation" id="innovation">
+    <div class="innovation-visual">
+      <img src="https://images.pexels.com/photos/8082194/pexels-photo-8082194.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Modern bathroom technology" loading="lazy" />
+    </div>
+    <div class="innovation-content">
+      <div class="section-label reveal">Technology</div>
+      <h2 class="section-title reveal reveal-delay-1">
+        Where Precision<br />Meets <em>Intuition</em>
+      </h2>
+      <p class="section-description reveal reveal-delay-2">
+        Our engineering teams combine decades of expertise in fluid dynamics, thermal management, and sensor technology to create systems that respond before you even reach for a button.
+      </p>
+      <div class="innovation-features stagger-children">
+        <div class="innovation-feature">
+          <span class="innovation-feature-num">01</span>
+          <div>
+            <h4>Adaptive Sensor Array</h4>
+            <p>Multi-point proximity sensors detect approach, seating position, and departure to automate lid, flush, and cleaning cycles.</p>
+          </div>
+        </div>
+        <div class="innovation-feature">
+          <span class="innovation-feature-num">02</span>
+          <div>
+            <h4>ThermoCore Heating</h4>
+            <p>Rapid-response ceramic heating elements reach target seat and water temperatures in under three seconds, consuming minimal energy.</p>
+          </div>
+        </div>
+        <div class="innovation-feature">
+          <span class="innovation-feature-num">03</span>
+          <div>
+            <h4>PureStream Wash System</h4>
+            <p>Oscillating and pulsating wash modes with adjustable pressure deliver a personalized, thorough cleansing experience every time.</p>
+          </div>
+        </div>
+        <div class="innovation-feature">
+          <span class="innovation-feature-num">04</span>
+          <div>
+            <h4>AirPurify Deodorizer</h4>
+            <p>Activated carbon filtration combined with catalytic ionization neutralizes odors at the molecular level, not simply masking them.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Product Collection ─── -->
+  <section class="collection" id="collection">
+    <div class="collection-header">
+      <div>
+        <div class="section-label reveal">The Collection</div>
+        <h2 class="section-title reveal reveal-delay-1">
+          Five Expressions of<br /><em>Intelligent</em> Living
+        </h2>
+      </div>
+      <a href="#" class="btn-secondary reveal reveal-delay-2">View All Models <span>&rarr;</span></a>
+    </div>
+
+    <div class="collection-grid stagger-children">
+      <!-- Featured -->
+      <div class="product-card">
+        <div class="product-image">
+          <span class="product-image-label">Flagship</span>
+          <img src="https://images.pexels.com/photos/6920614/pexels-photo-6920614.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Lumara Aura intelligent toilet" loading="lazy" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Lumara Aura</div>
+          <p class="product-tagline">Our most complete expression. Ambient lighting, voice control, Bluetooth connectivity, and a warm-air dryer converge in one sculptural form.</p>
+          <div class="product-price">From $4,280</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="https://images.pexels.com/photos/7166635/pexels-photo-7166635.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lumara Serene toilet" loading="lazy" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Lumara Serene</div>
+          <p class="product-tagline">Minimalism distilled. Wall-mounted elegance with a full suite of intelligent features.</p>
+          <div class="product-price">From $3,150</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <span class="product-image-label">New</span>
+          <img src="https://images.pexels.com/photos/1571462/pexels-photo-1571462.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lumara Vero toilet" loading="lazy" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Lumara Vero</div>
+          <p class="product-tagline">Performance and value in perfect equilibrium. Inspired by organic wave forms.</p>
+          <div class="product-price">From $2,480</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="https://images.pexels.com/photos/16113325/pexels-photo-16113325.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lumara Elara toilet" loading="lazy" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Lumara Elara</div>
+          <p class="product-tagline">Artful finishes in Rose Gold, Matte Black, and Pearl White redefine bathroom luxury.</p>
+          <div class="product-price">From $3,690</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-image">
+          <img src="https://images.pexels.com/photos/3316926/pexels-photo-3316926.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Lumara Mira toilet" loading="lazy" />
+        </div>
+        <div class="product-info">
+          <div class="product-name">Lumara Mira</div>
+          <p class="product-tagline">Compact intelligence. Every essential feature in a space-conscious form factor.</p>
+          <div class="product-price">From $1,890</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Experience Section ─── -->
+  <section class="experience" id="experience">
+    <div class="experience-grid">
+      <div>
+        <div class="section-label reveal">The Experience</div>
+        <h2 class="section-title reveal reveal-delay-1" style="color: white;">
+          Every Detail,<br /><em>Considered</em>
+        </h2>
+        <p class="section-description reveal reveal-delay-2">
+          A Lumara intelligent toilet adapts to you. From the moment you approach to the moment you leave, every interaction is orchestrated for effortless comfort.
+        </p>
+      </div>
+      <div class="experience-features stagger-children">
+        <div class="exp-feature">
+          <div class="exp-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 3v1m0 16v1m8.66-13.5l-.87.5M4.21 16.5l-.87.5M20.66 16.5l-.87-.5M4.21 7.5l-.87-.5M21 12h-1M4 12H3"/><circle cx="12" cy="12" r="4"/></svg>
+          </div>
+          <h4>Warm-Air Dryer</h4>
+          <p>Gentle, adjustable warm air replaces the need for paper entirely.</p>
+        </div>
+        <div class="exp-feature">
+          <div class="exp-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg>
+          </div>
+          <h4>Oscillating Wash</h4>
+          <p>Dual front and rear nozzles with five pressure settings and pulsation modes.</p>
+        </div>
+        <div class="exp-feature">
+          <div class="exp-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h4>Auto Open & Close</h4>
+          <p>Proximity sensors raise and lower the lid as you approach and depart.</p>
+        </div>
+        <div class="exp-feature">
+          <div class="exp-feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <h4>Ambient Night Light</h4>
+          <p>A soft LED guide light activates in low-light conditions for safe navigation.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Testimonial ─── -->
+  <section class="testimonial-section">
+    <div class="section-label reveal" style="justify-content:center;">What People Say</div>
+    <blockquote class="testimonial-quote reveal reveal-delay-1">
+      "Installing a Lumara was less of an upgrade and more of a revelation. It's the kind of detail that quietly transforms your entire morning routine."
+    </blockquote>
+    <p class="testimonial-author reveal reveal-delay-2">
+      <strong>Maren Althaus</strong> &mdash; Interior Architect, Copenhagen
+    </p>
+  </section>
+
+  <!-- ─── CTA Banner ─── -->
+  <div class="cta-banner reveal">
+    <h2 class="cta-title">
+      Begin Your Journey to<br /><em>Intelligent</em> Comfort
+    </h2>
+    <div class="cta-right">
+      <p>Visit a Lumara showroom to experience the full collection in person, or connect with our concierge team for a personalized consultation.</p>
+      <div class="hero-cta-group">
+        <a href="#" class="btn-primary">
+          Find a Showroom
+          <span class="arrow">&rarr;</span>
+        </a>
+        <a href="#" class="btn-secondary">Contact Us</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">Lumara</a>
+        <p>Redefining private wellness through intelligent design, precision engineering, and an uncompromising commitment to comfort.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Products</h4>
+        <ul>
+          <li><a href="#">Lumara Aura</a></li>
+          <li><a href="#">Lumara Serene</a></li>
+          <li><a href="#">Lumara Vero</a></li>
+          <li><a href="#">Lumara Elara</a></li>
+          <li><a href="#">Lumara Mira</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">Our Story</a></li>
+          <li><a href="#">Innovation Lab</a></li>
+          <li><a href="#">Sustainability</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Installation Guide</a></li>
+          <li><a href="#">Warranty</a></li>
+          <li><a href="#">Find a Dealer</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Lumara. All rights reserved.</p>
+      <div class="footer-social">
+        <a href="#" aria-label="Instagram">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="#" aria-label="Pinterest">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 21.17C8 21.17 9.5 15 10 13c-.5-1-1-2.5 0-4 1-1.5 3-1.5 3.5 0 .5 1.5-1 4-1 4s2 0 3-2c1-2 0-5-2-6.5S8 4 7 7c-1 3 1 4.5 1 4.5"/></svg>
+        </a>
+        <a href="#" aria-label="LinkedIn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Scroll Reveal (IntersectionObserver) ───
+    const revealElements = document.querySelectorAll('.reveal, .stagger-children');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -60px 0px'
+    });
+
+    revealElements.forEach(el => revealObserver.observe(el));
+
+    // ─── Navbar scroll state ───
+    const nav = document.getElementById('nav');
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 80) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    }, { passive: true });
+
+    // ─── Smooth scroll for nav links ───
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // ─── Mobile menu toggle ───
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.querySelector('.nav-links');
+    let menuOpen = false;
+
+    menuBtn.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        navLinks.style.display = 'flex';
+        navLinks.style.position = 'fixed';
+        navLinks.style.top = '60px';
+        navLinks.style.left = '0';
+        navLinks.style.right = '0';
+        navLinks.style.flexDirection = 'column';
+        navLinks.style.alignItems = 'center';
+        navLinks.style.padding = '2rem';
+        navLinks.style.gap = '1.5rem';
+        navLinks.style.background = 'rgba(10, 10, 15, 0.97)';
+        navLinks.style.backdropFilter = 'blur(20px)';
+        navLinks.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+        menuBtn.children[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+        menuBtn.children[1].style.opacity = '0';
+        menuBtn.children[2].style.transform = 'rotate(-45deg) translate(5px, -5px)';
+      } else {
+        navLinks.style.display = '';
+        navLinks.style.position = '';
+        navLinks.style.top = '';
+        navLinks.style.left = '';
+        navLinks.style.right = '';
+        navLinks.style.flexDirection = '';
+        navLinks.style.alignItems = '';
+        navLinks.style.padding = '';
+        navLinks.style.gap = '';
+        navLinks.style.background = '';
+        navLinks.style.backdropFilter = '';
+        navLinks.style.borderBottom = '';
+        menuBtn.children[0].style.transform = '';
+        menuBtn.children[1].style.opacity = '';
+        menuBtn.children[2].style.transform = '';
+      }
+    });
+
+    // ─── Parallax subtle effect on hero visual ───
+    const heroVisual = document.querySelector('.hero-visual-img');
+    if (heroVisual) {
+      window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        if (scrollY < window.innerHeight) {
+          heroVisual.style.transform = `translateY(${scrollY * 0.12}px) scale(1.05)`;
+        }
+      }, { passive: true });
+    }
+  </script>
+</body>
+</html>
